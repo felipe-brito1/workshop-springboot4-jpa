@@ -1,11 +1,17 @@
-FROM eclipse-temurin:21-jdk
+FROM ubuntu:latest AS build
 
-WORKDIR /app
+RUN apt-get update
+RUN apt-get install openjdk-21-jdk -y
 
 COPY . .
 
-RUN ./mvnw clean package -DskipTests
+RUN apt-get install maven -y
+RUN mvn clean install
+
+FROM openjdk:21-jdk-slim
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "target/*.jar"]
+COPY --from=build /target/project_springboot.jar app.jar
+
+ENTRYPOINT [ "java", "-jar", "app.jar" ]
